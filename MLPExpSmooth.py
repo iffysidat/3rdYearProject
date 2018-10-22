@@ -3,6 +3,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # Read in data
 # Remove Date Column
@@ -26,25 +27,42 @@ def addTrainingLables(filename):
 
 #Get data and add training labels
 df = addTrainingLables('^GSPC (6).csv')
+print(list(df))
 
-#Remove date column
-dataWithoutDate = np.delete(np.array(df), 0, 1)
+train = df[0:16803]
+test = df[16803:]
 
-#Define X set which is the data without the training labels
-X = np.array(np.delete(dataWithoutDate,6,1), dtype=np.float64)
+train.Timestamp = pd.to_datetime(train.Date, format='%Y-%m-%d')
+train.index = train.Timestamp
 
-#Define training labels separately
-labels = np.array(dataWithoutDate.take(6, 1),dtype=np.float64)
+test.Timestamp = pd.to_datetime(test.Date, format='%Y-%m-%d')
+test.index = test.Timestamp
 
-#Train test split data 80/20
-X_train, X_test, y_train, y_test = train_test_split(X, labels, test_size=0.2)
+# Visualise the data
+train.Close.plot(figsize=(15, 8), title= 'Close prices train', fontsize=14)
+test.Close.plot(figsize=(15,8), title= 'Close prices test', fontsize=14)
+plt.show()
 
-print(X_train)
-#Preprocess and fit data using exponential smoothing
-from statsmodels.tsa.api import ExponentialSmoothing, SimpleExpSmoothing, Holt
-model = SimpleExpSmoothing(np.asarray(X_train['Close'])).fit()
 
-print(X_train)
+
+# #Remove date column
+# dataWithoutDate = np.delete(np.array(df), 0, 1)
+#
+# #Define X set which is the data without the training labels
+# X = np.array(np.delete(dataWithoutDate,6,1), dtype=np.float64)
+#
+# #Define training labels separately
+# labels = np.array(dataWithoutDate.take(6, 1),dtype=np.float64)
+#
+# #Train test split data 80/20
+# X_train, X_test, y_train, y_test = train_test_split(X, labels, test_size=0.2)
+#
+# print(X_train)
+# #Preprocess and fit data using exponential smoothing
+# from statsmodels.tsa.api import ExponentialSmoothing, SimpleExpSmoothing, Holt
+# model = SimpleExpSmoothing(np.asarray(X_train['Close'])).fit()
+#
+# print(X_train)
 
 
 #Preprocessing step

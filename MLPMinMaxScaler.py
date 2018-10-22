@@ -29,13 +29,13 @@ df = addTrainingLables('^GSPC (6).csv')
 
 #Remove date column
 dataWithoutDate = np.delete(np.array(df), 0, 1)
-
+print(len(dataWithoutDate.columns))
 #Define X set which is the data without the training labels
 X = np.array(np.delete(dataWithoutDate,6,1), dtype=np.float64)
 
 #Define training labels separately
 labels = np.array(dataWithoutDate.take(6, 1),dtype=np.float64)
-
+print(labels)
 #Train test split data 80/20
 X_train, X_test, y_train, y_test = train_test_split(X, labels, test_size=0.2)
 
