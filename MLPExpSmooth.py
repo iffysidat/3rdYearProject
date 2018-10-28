@@ -43,6 +43,47 @@ train.Close.plot(figsize=(15, 8), title= 'Close prices train', fontsize=14)
 test.Close.plot(figsize=(15,8), title= 'Close prices test', fontsize=14)
 plt.show()
 
+#1 Implement naive forecast
+dd = np.asarray(train.Close)
+
+y_hat = test.copy()
+y_hat['naive'] = dd[len(dd)-1]
+
+y_hat_avg = test.copy()
+y_hat_avg['avg_forecast'] = train['Close'].mean()
+
+plt.figure(figsize=(12, 8))
+plt.plot(train.index, train['Close'], label='Train')
+plt.plot(test.index, test['Close'], label='Test')
+plt.plot(y_hat.index, y_hat['naive'], label='Naive Forecast')
+plt.legend(loc='best')
+plt.title("Naive Forecast")
+plt.show()
+
+from sklearn.metrics import mean_squared_error
+from math import sqrt
+rms = sqrt(mean_squared_error(test.Close, y_hat.naive))
+print("Naive forecast RMSE", rms)
+
+plt.plot(train['Close'], label='Train')
+plt.plot(test['Close'], label='Test')
+plt.plot(y_hat_avg['avg_forecast'], label='Average Forecast')
+plt.legend(loc='best')
+plt.show()
+
+rms = sqrt(mean_squared_error(test.Close, y_hat_avg.avg_forecast))
+print("Simple Average RMSE", rms)
+
+y_hat_avg['moving_avg_forecast'] = train['Close'].rolling(60).mean().iloc[-1]
+plt.plot(train['Close'], label='Train')
+plt.plot(test['Close'], label='Test')
+plt.plot(y_hat_avg['moving_avg_forecast'], label='Moving Average Forecast')
+plt.legend(loc='best')
+plt.show()
+
+rms = sqrt(mean_squared_error(test.Close, y_hat_avg.moving_avg_forecast))
+print("Moving Average RMSE", rms)
+
 
 
 # #Remove date column
