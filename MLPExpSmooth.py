@@ -62,6 +62,7 @@ plt.show()
 
 from sklearn.metrics import mean_squared_error
 from math import sqrt
+
 rms = sqrt(mean_squared_error(test.Close, y_hat.naive))
 print("Naive forecast RMSE", rms)
 
@@ -84,7 +85,37 @@ plt.show()
 rms = sqrt(mean_squared_error(test.Close, y_hat_avg.moving_avg_forecast))
 print("Moving Average RMSE", rms)
 
+from statsmodels.tsa.api import ExponentialSmoothing, SimpleExpSmoothing, Holt
+y_hat_avg = test.copy()
+fit2 = SimpleExpSmoothing(np.asarray(train['Close'])).fit(smoothing_level=0.6, optimized=False)
+y_hat_avg['SES'] = fit2.forecast(len(test))
+plt.figure(figsize=(16,8))
+plt.plot(train['Close'], label='Train')
+plt.plot(test['Close'], label='Test')
+plt.plot(y_hat_avg['SES'], label='SES')
+plt.legend(loc='best')
+plt.show()
 
+rms = sqrt(mean_squared_error(test.Close, y_hat_avg.SES))
+print("SES RMSE", rms)
+
+import statsmodels.api as sm
+sm.tsa.seasonal_decompose(train.Close, freq=1000 ).plot()
+result = sm.tsa.stattools.adfuller(train.Close)
+plt.show()
+
+y_hat_avg = test.copy()
+fit1 = Holt(np.asarray(train['Close'])).fit(smoothing_level=0.3, smoothing_slope=0.1)
+y_hat_avg['Holt_Linear'] = fit1.forecast(len(test))
+plt.figure(figsize=(16,8))
+plt.plot(train['Close'], label='Train')
+plt.plot(test['Close'], label='Test')
+plt.plot(y_hat_avg['Holt_Linear'], label='Holt_Linear')
+plt.legend(loc='best')
+plt.show()
+
+rms = sqrt(mean_squared_error(test.Close, y_hat_avg.Holt_Linear))
+print("Holt Linear RMSE", rms)
 
 # #Remove date column
 # dataWithoutDate = np.delete(np.array(df), 0, 1)
