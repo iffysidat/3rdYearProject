@@ -32,6 +32,9 @@ print(list(df))
 train = df[0:16803]
 test = df[16803:]
 
+df.Timestamp = pd.to_datetime(df.Date, format='%Y-%m-%d')
+df.index = df.Timestamp
+
 train.Timestamp = pd.to_datetime(train.Date, format='%Y-%m-%d')
 train.index = train.Timestamp
 
@@ -116,6 +119,35 @@ plt.show()
 
 rms = sqrt(mean_squared_error(test.Close, y_hat_avg.Holt_Linear))
 print("Holt Linear RMSE", rms)
+
+y_hat_avg = test.copy()
+fit1 = ExponentialSmoothing(np.asarray(train['Close']), seasonal_periods=7, trend='add', seasonal='add').fit()
+y_hat_avg['Holt_Winter'] = fit1.forecast(len(test))
+plt.figure(figsize=(16,8))
+plt.plot(train['Close'], label='Train')
+plt.plot(test['Close'], label='Test')
+plt.plot(y_hat_avg['Holt_Winter'], label='Holt_Winter')
+plt.legend(loc='best')
+plt.show()
+
+rms = sqrt(mean_squared_error(test.Close, y_hat_avg.Holt_Winter))
+print("Holt Winter RMSE", rms)
+
+print(train.head)
+
+y_hat_avg = test.copy()
+fit1 = sm.tsa.statespace.SARIMAX(train.Close, order=(2, 1, 4), seasonal_order=(0, 1, 1, 7)).fit()
+y_hat_avg['SARIMA'] = fit1.predict(dynamic=True)
+plt.figure(figsize=(16,8))
+plt.plot(train['Close'], label='Train')
+plt.plot(test['Close'], label='Test')
+plt.plot(y_hat_avg['SARIMA'], label='SARIMA')
+plt.legend(loc='best')
+plt.show()
+
+print(y_hat_avg['SARIMA'])
+rms = sqrt(mean_squared_error(test.Close, y_hat_avg.SARIMA))
+print("SARIMA", rms)
 
 # #Remove date column
 # dataWithoutDate = np.delete(np.array(df), 0, 1)

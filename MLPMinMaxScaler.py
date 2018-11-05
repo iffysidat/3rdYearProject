@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.neural_network import MLPClassifier
+from sklearn import preprocessing
 import pandas as pd
 
 # Read in data
@@ -25,11 +26,11 @@ def addTrainingLables(filename):
     return data
 
 #Get data and add training labels
-df = addTrainingLables('^GSPC (6).csv')
+df = addTrainingLables('S&P15Years.csv')
 
 #Remove date column
 dataWithoutDate = np.delete(np.array(df), 0, 1)
-print(len(dataWithoutDate.columns))
+
 #Define X set which is the data without the training labels
 X = np.array(np.delete(dataWithoutDate,6,1), dtype=np.float64)
 
@@ -45,7 +46,7 @@ scalar.fit_transform(X_train)
 
 #Preprocessing step
 
-X_test = scalar.fit_transform(X_test)
+X_test = scalar.transform(X_test)
 
 #Instantiaate classifier and fit data to model
 mlp = MLPClassifier(max_iter=20000)

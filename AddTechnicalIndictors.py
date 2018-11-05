@@ -5,7 +5,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.neural_network import MLPClassifier
 from matplotlib import pyplot as plt
 
-df = pd.read_csv("^GSPC (6).csv", sep=',')
+df = pd.read_csv("S&P15Years.csv", sep=',')
 
 df = utils.dropna(df)
 

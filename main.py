@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
+from sklearn import preprocessing
 import pandas as pd
 
 # Read in data
@@ -25,7 +26,7 @@ def addTrainingLables(filename):
     return data
 
 #Get data and add training labels
-df = addTrainingLables('^GSPC (6).csv')
+df = addTrainingLables('S&P15Years.csv')
 
 #Remove date column
 dataWithoutDate = np.delete(np.array(df), 0, 1)
@@ -44,8 +45,11 @@ scalar = StandardScaler()
 scalar.fit(X_train)
 
 #Preprocessing step
-X_train = scalar.transform(X_train)
-X_test = scalar.transform(X_test)
+X_train = preprocessing.scale(X_train)
+X_test = preprocessing.scale(X_test)
+
+# X_train = scalar.transform(X_train)
+# X_test = scalar.transform(X_test)
 
 #Instantiaate classifier and fit data to model
 mlp = MLPClassifier(max_iter=20000)

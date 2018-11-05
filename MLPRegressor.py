@@ -2,6 +2,8 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.neural_network import MLPClassifier
+from sklearn.linear_model import LinearRegression
+from sklearn import preprocessing
 import pandas as pd
 
 # Read in data
@@ -26,37 +28,63 @@ def addTrainingLables(filename):
 
 #Get data and add training labels
 df = addTrainingLables('^GSPC (6).csv')
-
+df.set_index('Date', inplace=True)
+print(df.tail())
 #Remove date column
-dataWithoutDate = np.delete(np.array(df), 0, 1)
+#dataWithoutDate = np.delete(np.array(df), 0, 1)
 
-#Define X set which is the data without the training labels
-X = np.array(np.delete(dataWithoutDate,6,1), dtype=np.float64)
+df = df[['Close']]
 
-#Define training labels separately
-labels = np.array(dataWithoutDate.take(6, 1),dtype=np.float64)
+forecast_out = int(30)
+df['Prediction'] = df[['Close']].shift(-forecast_out)
 
-#Train test split data 80/20
-X_train, X_test, y_train, y_test = train_test_split(X, labels, test_size=0.2)
+X = np.array(df.drop(['Prediction'], 1))
+X = preprocessing.scale(X)
 
-#Preprocess and fit data using scalar
-scalar = MinMaxScaler()
-scalar.fit_transform(X_train)
+X_forecast = X[-forecast_out:]
+X = X[:-forecast_out]
 
-#Preprocessing step
+y = np.array(df['Prediction'])
+y = y[:-forecast_out]
 
-X_test = scalar.fit_transform(X_test)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
-#Instantiaate classifier and fit data to model
-mlp = MLPClassifier(max_iter=20000)
-mlp.fit(X_train, y_train)
+clf = LinearRegression()
+clf.fit(X_train, y_train)
 
-#Predict values
-y_predict = mlp.predict(X_test)
+confidence = clf.score(X_test, y_test)
+print("Confidence:", confidence)
 
-#Print Classification report nd confusion matrix
-from sklearn.metrics import classification_report,confusion_matrix
-print(classification_report(y_test, y_predict))
-print(confusion_matrix(y_test, y_predict))
+forecast_prediction = clf.predict(X_forecast)
+print(forecast_prediction)
+
+# #Define X set which is the data without the training labels
+# X = np.array(np.delete(df,5,1), dtype=np.float64)
+#
+# #Define training labels separately
+# labels = np.array(df.take(5, 1),dtype=np.float64)
+#
+# #Train test split data 80/20
+# X_train, X_test, y_train, y_test = train_test_split(X, labels, test_size=0.2)
+#
+# #Preprocess and fit data using scalar
+# scalar = MinMaxScaler()
+# scalar.fit_transform(X_train)
+#
+# #Preprocessing step
+#
+# X_test = scalar.fit_transform(X_test)
+#
+# #Instantiaate classifier and fit data to model
+# mlp = MLPClassifier(max_iter=20000)
+# mlp.fit(X_train, y_train)
+#
+# #Predict values
+# y_predict = mlp.predict(X_test)
+#
+# #Print Classification report nd confusion matrix
+# from sklearn.metrics import classification_report,confusion_matrix
+# print(classification_report(y_test, y_predict))
+# print(confusion_matrix(y_test, y_predict))
 
 
