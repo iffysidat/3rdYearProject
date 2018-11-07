@@ -26,37 +26,44 @@ def addTrainingLables(filename):
     return data
 
 #Get data and add training labels
-df = addTrainingLables('S&P15Years.csv')
+df = addTrainingLables('S&P5Years.csv')
 
 #Remove date column
 dataWithoutDate = np.delete(np.array(df), 0, 1)
 
 #Define X set which is the data without the training labels
 X = np.array(np.delete(dataWithoutDate,6,1), dtype=np.float64)
-
+print(len(X))
 #Define training labels separately
 labels = np.array(dataWithoutDate.take(6, 1),dtype=np.float64)
 
 #Train test split data 80/20
-X_train, X_test, y_train, y_test = train_test_split(X, labels, test_size=0.2)
+#X_train, X_test, y_train, y_test = train_test_split(X, labels, test_size=0.2)
+split = int(0.8 * len(X))
+
+X_train = X[:split]
+X_test = X[split:]
+y_train = labels[:split]
+y_test = labels[split:]
 
 #Preprocess and fit data using scalar
 scalar = StandardScaler()
 scalar.fit(X_train)
 
 #Preprocessing step
-X_train = preprocessing.scale(X_train)
-X_test = preprocessing.scale(X_test)
+#X_train = preprocessing.scale(X_train)
+#X_test = preprocessing.scale(X_test)
 
-# X_train = scalar.transform(X_train)
-# X_test = scalar.transform(X_test)
+X_train = scalar.transform(X_train)
+X_test = scalar.transform(X_test)
 
 #Instantiaate classifier and fit data to model
-mlp = MLPClassifier(max_iter=20000)
+mlp = MLPClassifier(hidden_layer_sizes=(1000, 500, 250, 125), max_iter=5000000)
 mlp.fit(X_train, y_train)
 
 #Predict values
 y_predict = mlp.predict(X_test)
+print(y_predict)
 
 #Print Classification report nd confusion matrix
 from sklearn.metrics import classification_report,confusion_matrix

@@ -4,6 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.neural_network import MLPClassifier
 from sklearn.linear_model import LinearRegression
 from sklearn import preprocessing
+import matplotlib.pyplot as plt
 import pandas as pd
 
 # Read in data
@@ -27,7 +28,7 @@ def addTrainingLables(filename):
     return data
 
 #Get data and add training labels
-df = addTrainingLables('^GSPC (6).csv')
+df = addTrainingLables('^GSPC.csv')
 df.set_index('Date', inplace=True)
 print(df.tail())
 #Remove date column
@@ -47,7 +48,14 @@ X = X[:-forecast_out]
 y = np.array(df['Prediction'])
 y = y[:-forecast_out]
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+#X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+split = int(0.8 * len(X))
+
+X_train = X[:split]
+print(X_train)
+X_test = X[split:]
+y_train = y[:split]
+y_test = y[split:]
 
 clf = LinearRegression()
 clf.fit(X_train, y_train)
@@ -57,6 +65,7 @@ print("Confidence:", confidence)
 
 forecast_prediction = clf.predict(X_forecast)
 print(forecast_prediction)
+
 
 # #Define X set which is the data without the training labels
 # X = np.array(np.delete(df,5,1), dtype=np.float64)
