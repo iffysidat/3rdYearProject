@@ -13,7 +13,7 @@ def addTrainingLables(filename):
     return data
 
 
-df = addTrainingLables('S&P5Years.csv')
+df = addTrainingLables('^GSPC (6).csv')
 df.set_index('Date', inplace=True)
 print(df.head())
 
@@ -21,7 +21,25 @@ X = df.drop('Label', axis=1)
 y = df['Label']
 
 from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20)
+
+from sklearn.preprocessing import MinMaxScaler
+scalar = MinMaxScaler()
+scalar.fit_transform(X_train)
+
+scalar.transform(X_test)
+
+from sklearn.svm import SVC
+svm_classifier = SVC(kernel='rbf')
+svm_classifier.fit(X_train, y_train)
+print("Data fit now predicting")
+
+y_pred = svm_classifier.predict(X_test)
+
+from sklearn.metrics import classification_report, confusion_matrix
+print(confusion_matrix(y_test, y_pred))
+print(classification_report(y_test, y_pred))
+
 
 
 
