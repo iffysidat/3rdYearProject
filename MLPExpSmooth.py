@@ -49,48 +49,12 @@ plt.show()
 #1 Implement naive forecast
 dd = np.asarray(train.Close)
 
-y_hat = test.copy()
-y_hat['naive'] = dd[len(dd)-1]
-
-y_hat_avg = test.copy()
-y_hat_avg['avg_forecast'] = train['Close'].mean()
-
-plt.figure(figsize=(12, 8))
-plt.plot(train.index, train['Close'], label='Train')
-plt.plot(test.index, test['Close'], label='Test')
-plt.plot(y_hat.index, y_hat['naive'], label='Naive Forecast')
-plt.legend(loc='best')
-plt.title("Naive Forecast")
-plt.show()
-
 from sklearn.metrics import mean_squared_error
 from math import sqrt
 
-rms = sqrt(mean_squared_error(test.Close, y_hat.naive))
-print("Naive forecast RMSE", rms)
-
-plt.plot(train['Close'], label='Train')
-plt.plot(test['Close'], label='Test')
-plt.plot(y_hat_avg['avg_forecast'], label='Average Forecast')
-plt.legend(loc='best')
-plt.show()
-
-rms = sqrt(mean_squared_error(test.Close, y_hat_avg.avg_forecast))
-print("Simple Average RMSE", rms)
-
-y_hat_avg['moving_avg_forecast'] = train['Close'].rolling(60).mean().iloc[-1]
-plt.plot(train['Close'], label='Train')
-plt.plot(test['Close'], label='Test')
-plt.plot(y_hat_avg['moving_avg_forecast'], label='Moving Average Forecast')
-plt.legend(loc='best')
-plt.show()
-
-rms = sqrt(mean_squared_error(test.Close, y_hat_avg.moving_avg_forecast))
-print("Moving Average RMSE", rms)
-
 from statsmodels.tsa.api import ExponentialSmoothing, SimpleExpSmoothing, Holt
 y_hat_avg = test.copy()
-fit2 = SimpleExpSmoothing(np.asarray(train['Close'])).fit(smoothing_level=0.6, optimized=False)
+fit2 = SimpleExpSmoothing(np.asarray(train['Close'])).fit(smoothing_level=0.1, optimized=False)
 y_hat_avg['SES'] = fit2.forecast(len(test))
 plt.figure(figsize=(16,8))
 plt.plot(train['Close'], label='Train')
@@ -102,52 +66,52 @@ plt.show()
 rms = sqrt(mean_squared_error(test.Close, y_hat_avg.SES))
 print("SES RMSE", rms)
 
-import statsmodels.api as sm
-sm.tsa.seasonal_decompose(train.Close, freq=1000 ).plot()
-result = sm.tsa.stattools.adfuller(train.Close)
-plt.show()
-
-y_hat_avg = test.copy()
-fit1 = Holt(np.asarray(train['Close'])).fit(smoothing_level=0.3, smoothing_slope=0.1)
-y_hat_avg['Holt_Linear'] = fit1.forecast(len(test))
-plt.figure(figsize=(16,8))
-plt.plot(train['Close'], label='Train')
-plt.plot(test['Close'], label='Test')
-plt.plot(y_hat_avg['Holt_Linear'], label='Holt_Linear')
-plt.legend(loc='best')
-plt.show()
-
-rms = sqrt(mean_squared_error(test.Close, y_hat_avg.Holt_Linear))
-print("Holt Linear RMSE", rms)
-
-y_hat_avg = test.copy()
-fit1 = ExponentialSmoothing(np.asarray(train['Close']), seasonal_periods=7, trend='add', seasonal='add').fit()
-y_hat_avg['Holt_Winter'] = fit1.forecast(len(test))
-plt.figure(figsize=(16,8))
-plt.plot(train['Close'], label='Train')
-plt.plot(test['Close'], label='Test')
-plt.plot(y_hat_avg['Holt_Winter'], label='Holt_Winter')
-plt.legend(loc='best')
-plt.show()
-
-rms = sqrt(mean_squared_error(test.Close, y_hat_avg.Holt_Winter))
-print("Holt Winter RMSE", rms)
-
-print(train.head)
-
-y_hat_avg = test.copy()
-fit1 = sm.tsa.statespace.SARIMAX(train.Close, order=(2, 1, 4), seasonal_order=(0, 1, 1, 7)).fit()
-y_hat_avg['SARIMA'] = fit1.predict(dynamic=True)
-plt.figure(figsize=(16,8))
-plt.plot(train['Close'], label='Train')
-plt.plot(test['Close'], label='Test')
-plt.plot(y_hat_avg['SARIMA'], label='SARIMA')
-plt.legend(loc='best')
-plt.show()
-
-print(y_hat_avg['SARIMA'])
-rms = sqrt(mean_squared_error(test.Close, y_hat_avg.SARIMA))
-print("SARIMA", rms)
+# import statsmodels.api as sm
+# sm.tsa.seasonal_decompose(train.Close, freq=1000 ).plot()
+# result = sm.tsa.stattools.adfuller(train.Close)
+# plt.show()
+#
+# y_hat_avg = test.copy()
+# fit1 = Holt(np.asarray(train['Close'])).fit(smoothing_level=0.3, smoothing_slope=0.1)
+# y_hat_avg['Holt_Linear'] = fit1.forecast(len(test))
+# plt.figure(figsize=(16,8))
+# plt.plot(train['Close'], label='Train')
+# plt.plot(test['Close'], label='Test')
+# plt.plot(y_hat_avg['Holt_Linear'], label='Holt_Linear')
+# plt.legend(loc='best')
+# plt.show()
+#
+# rms = sqrt(mean_squared_error(test.Close, y_hat_avg.Holt_Linear))
+# print("Holt Linear RMSE", rms)
+#
+# y_hat_avg = test.copy()
+# fit1 = ExponentialSmoothing(np.asarray(train['Close']), seasonal_periods=7, trend='add', seasonal='add').fit()
+# y_hat_avg['Holt_Winter'] = fit1.forecast(len(test))
+# plt.figure(figsize=(16,8))
+# plt.plot(train['Close'], label='Train')
+# plt.plot(test['Close'], label='Test')
+# plt.plot(y_hat_avg['Holt_Winter'], label='Holt_Winter')
+# plt.legend(loc='best')
+# plt.show()
+#
+# rms = sqrt(mean_squared_error(test.Close, y_hat_avg.Holt_Winter))
+# print("Holt Winter RMSE", rms)
+#
+# print(train.head)
+#
+# y_hat_avg = test.copy()
+# fit1 = sm.tsa.statespace.SARIMAX(train.Close, order=(2, 1, 4), seasonal_order=(0, 1, 1, 7)).fit()
+# y_hat_avg['SARIMA'] = fit1.predict(dynamic=True)
+# plt.figure(figsize=(16,8))
+# plt.plot(train['Close'], label='Train')
+# plt.plot(test['Close'], label='Test')
+# plt.plot(y_hat_avg['SARIMA'], label='SARIMA')
+# plt.legend(loc='best')
+# plt.show()
+#
+# print(y_hat_avg['SARIMA'])
+# rms = sqrt(mean_squared_error(test.Close, y_hat_avg.SARIMA))
+# print("SARIMA", rms)
 
 # #Remove date column
 # dataWithoutDate = np.delete(np.array(df), 0, 1)
