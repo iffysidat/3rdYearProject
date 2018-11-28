@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.neural_network import MLPClassifier
 from sklearn import preprocessing
 import pandas as pd
@@ -47,26 +47,41 @@ y_train = labels[:split]
 y_test = labels[split:]
 
 # Preprocess and fit data using scalar
-scalar = StandardScaler()
+scalar = MinMaxScaler()
 scalar.fit(X_train)
-
-# Preprocessing step
-# X_train = preprocessing.scale(X_train)
-# X_test = preprocessing.scale(X_test)
 
 X_train = scalar.transform(X_train)
 X_test = scalar.transform(X_test)
 
 # Instantiate classifier and fit data to model
-mlp = MLPClassifier(hidden_layer_sizes=(1000, 500, 250, 125), max_iter=5000000)
-mlp.fit(X_train, y_train)
+mlp = MLPClassifier(max_iter=200000)
+
+parameter_space = {
+    'hidden_layer_sizes': [(50, 50, 50), (100, 50, 25), (100,)],
+    'activation': ['tanh', 'relu', 'logistic'],
+    'solver': ['sgd', 'adam'],
+    'alpha': [0.0001, 0.05],
+    'learning_rate': ['constant', 'adaptive'],
+}
+from sklearn.model_selection import GridSearchCV
+
+clf = GridSearchCV(mlp, parameter_space, cv=3)
+clf.fit(X_train, y_train)
+
+# Best paramete set
+print('Best parameters found:\n', clf.best_params_)
+
+# All results
+means = clf.cv_results_['mean_test_score']
+stds = clf.cv_results_['std_test_score']
+for mean, std, params in zip(means, stds, clf.cv_results_['params']):
+    print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
 
 # Predict values
-y_predict = mlp.predict(X_test)
-print(y_predict)
+y_predict = clf.predict(X_test)
 
 # Print Classification report nd confusion matrix
-from sklearn.metrics import classification_report,confusion_matrix
+from sklearn.metrics import classification_report, confusion_matrix
 print(classification_report(y_test, y_predict))
 print(confusion_matrix(y_test, y_predict))
 
