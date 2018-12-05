@@ -26,13 +26,13 @@ def addTrainingLables(filename):
     return data
 
 # Get data and add training labels
-df = addTrainingLables('S&P5Years.csv')
+df = addTrainingLables('../S&P15Years.csv')
 
 # Remove date column
 dataWithoutDate = np.delete(np.array(df), 0, 1)
 
 # Define X set which is the data without the training labels
-X = np.array(np.delete(dataWithoutDate,6,1), dtype=np.float64)
+X = np.array(np.delete(dataWithoutDate, 6, 1), dtype=np.float64)
 print(len(X))
 # Define training labels separately
 labels = np.array(dataWithoutDate.take(6, 1),dtype=np.float64)
@@ -57,7 +57,7 @@ X_test = scalar.transform(X_test)
 mlp = MLPClassifier(max_iter=200000)
 
 parameter_space = {
-    'hidden_layer_sizes': [(50, 50, 50), (100, 50, 25), (100,)],
+    'hidden_layer_sizes': [(50, 50, 50), (100, 50, 25), (100,), (1000, 500, 250, 125)],
     'activation': ['tanh', 'relu', 'logistic'],
     'solver': ['sgd', 'adam'],
     'alpha': [0.0001, 0.05],

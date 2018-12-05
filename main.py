@@ -32,7 +32,7 @@ df = addTrainingLables('S&P5Years.csv')
 dataWithoutDate = np.delete(np.array(df), 0, 1)
 
 # Define X set which is the data without the training labels
-X = np.array(np.delete(dataWithoutDate,6,1), dtype=np.float64)
+X = np.array(np.delete(dataWithoutDate, 1, 1), dtype=np.float64)
 print(len(X))
 # Define training labels separately
 labels = np.array(dataWithoutDate.take(6, 1),dtype=np.float64)
