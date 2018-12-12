@@ -52,11 +52,11 @@ scalar.fit(X_train)
 X_train = scalar.transform(X_train)
 X_test = scalar.transform(X_test)
 
-from sklearn.svm import SVR
-svr = SVR(kernel="poly")
-svr.fit(X_train, y_train)
+from sklearn.tree import DecisionTreeRegressor
+tree = DecisionTreeRegressor()
+tree.fit(X_train, y_train)
 
-y_predict = svr.predict(X_test)
+y_predict = tree.predict(X_test)
 
 print("Y_PREDICT")
 print(y_predict)
