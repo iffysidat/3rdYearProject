@@ -22,7 +22,7 @@ def addTrainingLables(filename):
     return data
 
 # Get data and add training labels
-df = pd.read_csv('../S&P5Years.csv')
+df = pd.read_csv('../Data/S&P5Years.csv')
 
 # Remove date column
 dataWithoutDate = np.delete(np.array(df), 0, 1)

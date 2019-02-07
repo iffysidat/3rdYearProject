@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from sklearn import tree
 
 def addTrainingLables(filename):
     data = pd.read_csv(filename)
@@ -37,12 +38,17 @@ scalar.fit_transform(X_train)
 scalar.transform(X_test)
 
 from sklearn.tree import DecisionTreeClassifier
-tree = DecisionTreeClassifier()
-tree.fit(X_train, y_train)
+clf = DecisionTreeClassifier()
+clf.fit(X_train, y_train)
 print("Data fit now predicting")
 
-y_pred = tree.predict(X_test)
+y_pred = clf.predict(X_test)
 
 from sklearn.metrics import classification_report, confusion_matrix
 print(confusion_matrix(y_test, y_pred))
 print(classification_report(y_test, y_pred))
+
+import graphviz
+dot_data = tree.export_graphviz(clf, out_file='tree.dot', feature_names=X.columns.values, class_names=['0', '1'],
+                                filled=True, rounded=True, special_characters=True)
+graphviz.Source(dot_data)

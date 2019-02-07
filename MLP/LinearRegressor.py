@@ -28,7 +28,7 @@ def addTrainingLables(filename):
     return data
 
 #Get data and add training labels
-df = addTrainingLables('^GSPC.csv')
+df = addTrainingLables('../Data/AAPL.csv')
 df.set_index('Date', inplace=True)
 print(df.tail())
 #Remove date column
