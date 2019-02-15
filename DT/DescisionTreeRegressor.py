@@ -8,6 +8,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn import preprocessing
 import matplotlib.pyplot as plt
 import pandas as pd
+from sklearn import tree
 
 
 #Function to read data
@@ -22,7 +23,7 @@ def addTrainingLables(filename):
     return data
 
 # Get data and add training labels
-df = pd.read_csv('../Data/S&P5Years.csv')
+df = pd.read_csv('../Data/AAPL.csv')
 
 # Remove date column
 dataWithoutDate = np.delete(np.array(df), 0, 1)
@@ -34,6 +35,7 @@ print("ACTUAL VALUES")
 print(actualValues)
 
 X = np.array(np.delete(dataWithoutDate, 3, 1), dtype=np.float64)
+print("X")
 print(X)
 
 # Train test split data 80/20
@@ -53,10 +55,10 @@ X_train = scalar.transform(X_train)
 X_test = scalar.transform(X_test)
 
 from sklearn.tree import DecisionTreeRegressor
-tree = DecisionTreeRegressor()
-tree.fit(X_train, y_train)
+clf = DecisionTreeRegressor()
+clf.fit(X_train, y_train)
 
-y_predict = tree.predict(X_test)
+y_predict = clf.predict(X_test)
 
 print("Y_PREDICT")
 print(y_predict)
@@ -66,4 +68,9 @@ print(y_test)
 print("RMSE")
 rms = sqrt(mean_squared_error(y_test, y_predict))
 print(rms)
+
+import graphviz
+dot_data = tree.export_graphviz(clf, out_file='tree.dot', feature_names=['Open', 'High', 'Low', 'Adj Close', 'Volume'],
+                                filled=True, rounded=True, special_characters=True)
+graphviz.Source(dot_data)
 

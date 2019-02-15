@@ -13,7 +13,7 @@ def addTrainingLables(filename):
     return data
 
 
-df = addTrainingLables('^GSPC (6).csv')
+df = addTrainingLables('../Data/S&P5Years.csv')
 df.set_index('Date', inplace=True)
 print(df.head())
 
@@ -30,7 +30,7 @@ scalar.fit_transform(X_train)
 scalar.transform(X_test)
 
 from sklearn.svm import SVC
-svm_classifier = SVC(kernel='rbf')
+svm_classifier = SVC(kernel='linear')
 svm_classifier.fit(X_train, y_train)
 print("Data fit now predicting")
 
