@@ -1,4 +1,6 @@
 # load and plot dataset
+import pickle
+
 import numpy
 from math import sqrt
 from pandas import read_csv
@@ -120,7 +122,7 @@ print(test_scaled)
 
 batch_size = 4
 train_trimmed = train_scaled[2:, :]
-model = fit_model(train_trimmed, batch_size, 2000, 1)
+model = fit_model(train_trimmed, batch_size, 500, 1)
 
 test_reshaped = test_scaled[:, 0:-1]
 
@@ -136,6 +138,8 @@ for i in range(len(output)):
 print("PREDICITIONS")
 print(predictions)
 
+with open('modeloutput.pkl', 'wb') as f:
+    pickle.dump((raw_values, predictions), f)
 
 rmse = sqrt(mean_squared_error(raw_values[-280:], predictions))
 print('%d) Test RMSE: %.3f' % (1, rmse))
