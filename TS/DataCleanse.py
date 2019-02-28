@@ -6,6 +6,12 @@ from pandas import concat
 from pandas import read_csv
 from pandas import datetime
 from matplotlib import pyplot
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.neural_network import MLPRegressor
+from sklearn.svm import SVR
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import mean_squared_error
+from math import sqrt
 desired_width=320
 
 pandas.set_option('display.width', desired_width)
@@ -50,14 +56,15 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
 def parser(date_string):
     return datetime.strptime(date_string, '%Y-%m-%d')
 
-series = read_csv('../Data/S&P5YearsCLoseNODate.csv')
+series = read_csv('../Data/S&P5YearsCLoseNoDate.csv')
 # summarize first few rows
 print(series)
 values = series.values
-data = series_to_supervised(values, 1, 1)
-data.rename(columns={"var1(t)": "Close", "var1(t-1)": "Previous Close", "var2(t)": "High", "var2(t-1)": "Previous High",
-                     "var3(t)": "Low", "var3(t-1)": "Previous Low", "var4(t)": "Volume", "var4(t-1)": "Previous Volume"}
-            , inplace=True)
+data = series_to_supervised(values, 2, 1)
+data.rename(columns={"var1(t)": "Close"}, inplace=True)
+#, "var1(t-1)": "Previous Close", "var2(t)": "High", "var2(t-1)": "Previous High",
+#                     "var3(t)": "Low", "var3(t-1)": "Previous Low", "var4(t)": "Volume", "var4(t-1)": "Previous Volume"}
+#            , inplace=True)
 print(data)
 print(list(data))
 
@@ -65,11 +72,96 @@ train_size = int(len(data) * 0.8)
 
 train, test = data[0:train_size], data[train_size:len(data)]
 
+print("TRAIN")
+print(train)
+print("TEST")
+print(test)
 print(len(train))
 print(len(test))
 
-train.plot(subplots=True)
-pyplot.show()
+#train.plot(subplots=True)
+#pyplot.show()
 
-print("TRAIN")
-#print(train)
+closeTrain = train["Close"]
+closeTest = test["Close"]
+
+train = train.iloc[]
+
+#-----------------------------------------------------------------------------------------------------------------------
+#  MLP PART (REGRESSION)
+# scalar = MinMaxScaler()
+# scalar.fit(train)
+#
+# X_train = scalar.transform(train)
+# X_test = scalar.transform(test)
+#
+# mlp = MLPRegressor(hidden_layer_sizes=(3, 4, 5), max_iter=200000)
+# mlp.fit(X_train, closeTrain)
+#
+# y_predict = mlp.predict(X_test)
+#
+# print("Y_PREDICT")
+# print(y_predict)
+# print("CLOSETEST")
+# print(closeTest)
+#
+# print("RMSE")
+# rms = sqrt(mean_squared_error(closeTest, y_predict))
+# print(rms)
+
+#-----------------------------------------------------------------------------------------------------------------------
+#  MLP PART (Classifier)
+# scalar = MinMaxScaler()
+# scalar.fit(train)
+#
+# X_train = scalar.transform(train)
+# X_test = scalar.transform(test)
+#
+
+#-----------------------------------------------------------------------------------------------------------------------
+# SVM PART (REGRESSION)
+#
+# scalar = MinMaxScaler()
+# scalar.fit(train)
+#
+# X_train = scalar.transform(train)
+# X_test = scalar.transform(test)
+#
+# svr = SVR(kernel="linear")
+# svr.fit(X_train, closeTrain)
+#
+# y_predict = svr.predict(X_test)
+#
+# print("Y_PREDICT")
+# print(y_predict)
+# print("CLOSETEST")
+# print(closeTest)
+#
+# print("RMSE")
+# rms = sqrt(mean_squared_error(closeTest, y_predict))
+# print(rms)
+#-----------------------------------------------------------------------------------------------------------------------
+# Decision Tree Part (REGRESSION)
+#
+# scalar = MinMaxScaler()
+# scalar.fit(train)
+#
+# X_train = scalar.transform(train)
+# X_test = scalar.transform(test)
+#
+# clf = DecisionTreeRegressor()
+# clf.fit(X_train, closeTrain)
+#
+# y_predict = clf.predict(X_test)
+#
+# print("Y_PREDICT")
+# print(y_predict)
+# print("CLOSETEST")
+# print(closeTest)
+#
+# print("RMSE")
+# rms = sqrt(mean_squared_error(closeTest, y_predict))
+# print(rms)
+
+
+
