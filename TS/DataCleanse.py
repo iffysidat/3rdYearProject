@@ -8,8 +8,11 @@ from pandas import datetime
 from matplotlib import pyplot
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.neural_network import MLPRegressor
+from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVR
+from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import mean_squared_error
 from math import sqrt
 desired_width=320
@@ -56,28 +59,33 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
 def parser(date_string):
     return datetime.strptime(date_string, '%Y-%m-%d')
 
+def addTrainingLables(data, shift):
+    labels = []
+    for i in range(0, len(data) - 1):
+        labels.append(0 if (data.iloc[i, 0] > data.iloc[i, -1]) else 1)
+    labels = shift * [666] + labels
+    trainingLables = pandas.DataFrame(columns=["Label"], data=labels)
+    data["Label"] = trainingLables
+    data = data[:-1]
+    return data
+
 series = read_csv('../Data/S&P5YearsCLoseNoDate.csv')
 # summarize first few rows
 print(series)
 values = series.values
-data = series_to_supervised(values, 2, 1)
+shift_days = 15
+data = series_to_supervised(values, shift_days, 1)
 data.rename(columns={"var1(t)": "Close"}, inplace=True)
-#, "var1(t-1)": "Previous Close", "var2(t)": "High", "var2(t-1)": "Previous High",
-#                     "var3(t)": "Low", "var3(t-1)": "Previous Low", "var4(t)": "Volume", "var4(t-1)": "Previous Volume"}
-#            , inplace=True)
-print(data)
-print(list(data))
+
+data = data.loc[:, :"Close"]
+
+#-----------------------------------------------------------------------------------------------------------------------
+# ONLY USE WHEN CLASSIFYING
+data = addTrainingLables(data, shift_days)
+#-----------------------------------------------------------------------------------------------------------------------
 
 train_size = int(len(data) * 0.8)
-
 train, test = data[0:train_size], data[train_size:len(data)]
-
-print("TRAIN")
-print(train)
-print("TEST")
-print(test)
-print(len(train))
-print(len(test))
 
 #train.plot(subplots=True)
 #pyplot.show()
@@ -85,17 +93,26 @@ print(len(test))
 closeTrain = train["Close"]
 closeTest = test["Close"]
 
-train = train.iloc[]
+train = train.drop(["Close"], axis=1)
+test = test.drop(["Close"], axis=1)
 
+#-----------------------------------------------------------------------------------------------------------------------
+# ONLY USE WHEN CLASSIFYING
+trainLabels = train["Label"]
+testLabels = test["Label"]
+
+train = train.drop(["Label"], axis=1)
+test = test.drop(["Label"], axis=1)
+#-----------------------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------------
 #  MLP PART (REGRESSION)
 # scalar = MinMaxScaler()
 # scalar.fit(train)
 #
-# X_train = scalar.transform(train)
+# X_train = scalar.fit_transform(train)
 # X_test = scalar.transform(test)
 #
-# mlp = MLPRegressor(hidden_layer_sizes=(3, 4, 5), max_iter=200000)
+# mlp = MLPRegressor(hidden_layer_sizes=(10, 12, 14), max_iter=20000)
 # mlp.fit(X_train, closeTrain)
 #
 # y_predict = mlp.predict(X_test)
@@ -114,9 +131,25 @@ train = train.iloc[]
 # scalar = MinMaxScaler()
 # scalar.fit(train)
 #
-# X_train = scalar.transform(train)
+# X_train = scalar.fit_transform(train)
 # X_test = scalar.transform(test)
 #
+# mlp = MLPClassifier(hidden_layer_sizes=(80, 80, 80, 80), max_iter=20000)
+# mlp.fit(X_train, trainLabels)
+#
+# # Predict values
+# y_predict = mlp.predict(X_test)
+#
+# print("PREDCITED")
+# print(y_predict)
+# print("TESTLABELS")
+# print(testLabels)
+#
+# # Print Classification report nd confusion matrix
+# from sklearn.metrics import classification_report, confusion_matrix
+# print(classification_report(testLabels, y_predict))
+# print(confusion_matrix(testLabels, y_predict))
+
 
 #-----------------------------------------------------------------------------------------------------------------------
 # SVM PART (REGRESSION)
@@ -124,7 +157,7 @@ train = train.iloc[]
 # scalar = MinMaxScaler()
 # scalar.fit(train)
 #
-# X_train = scalar.transform(train)
+# X_train = scalar.fit_transform(train)
 # X_test = scalar.transform(test)
 #
 # svr = SVR(kernel="linear")
@@ -140,13 +173,38 @@ train = train.iloc[]
 # print("RMSE")
 # rms = sqrt(mean_squared_error(closeTest, y_predict))
 # print(rms)
+
+#-----------------------------------------------------------------------------------------------------------------------
+#  SVM PART (Classifier)
+# scalar = MinMaxScaler()
+# scalar.fit(train)
+#
+# X_train = scalar.fit_transform(train)
+# X_test = scalar.transform(test)
+#
+# svc = SVC(kernel="linear")
+# svc.fit(X_train, trainLabels)
+#
+# # Predict values
+# y_predict = svc.predict(X_test)
+#
+# print("PREDCITED")
+# print(y_predict)
+# print("TESTLABELS")
+# print(testLabels)
+#
+# # Print Classification report nd confusion matrix
+# from sklearn.metrics import classification_report, confusion_matrix
+# print(classification_report(testLabels, y_predict))
+# print(confusion_matrix(testLabels, y_predict))
+#
 #-----------------------------------------------------------------------------------------------------------------------
 # Decision Tree Part (REGRESSION)
 #
 # scalar = MinMaxScaler()
 # scalar.fit(train)
 #
-# X_train = scalar.transform(train)
+# X_train = scalar.fit_transform(train)
 # X_test = scalar.transform(test)
 #
 # clf = DecisionTreeRegressor()
@@ -163,5 +221,29 @@ train = train.iloc[]
 # rms = sqrt(mean_squared_error(closeTest, y_predict))
 # print(rms)
 
+#-----------------------------------------------------------------------------------------------------------------------
+#  Decision Tree PART (Classifier)
+# scalar = MinMaxScaler()
+# scalar.fit(train)
+#
+# X_train = scalar.fit_transform(train)
+# X_test = scalar.transform(test)
+#
+# dtc = DecisionTreeClassifier()
+# dtc.fit(X_train, trainLabels)
+#
+# # Predict values
+# y_predict = dtc.predict(X_test)
+#
+# print("PREDCITED")
+# print(y_predict)
+# print("TESTLABELS")
+# print(testLabels)
+#
+# # Print Classification report nd confusion matrix
+# from sklearn.metrics import classification_report, confusion_matrix
+# print(classification_report(testLabels, y_predict))
+# print(confusion_matrix(testLabels, y_predict))
+#
 
 
