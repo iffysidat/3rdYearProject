@@ -14,6 +14,7 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import accuracy_score
 from math import sqrt
 desired_width=320
 
@@ -69,11 +70,11 @@ def addTrainingLables(data, shift):
     data = data[:-1]
     return data
 
-series = read_csv('../Data/S&P5YearsCLoseNoDate.csv')
+series = read_csv('../Data/S&P15YearsCloseNoDate.csv')
 # summarize first few rows
 print(series)
 values = series.values
-shift_days = 15
+shift_days = 10
 data = series_to_supervised(values, shift_days, 1)
 data.rename(columns={"var1(t)": "Close"}, inplace=True)
 
@@ -81,7 +82,7 @@ data = data.loc[:, :"Close"]
 
 #-----------------------------------------------------------------------------------------------------------------------
 # ONLY USE WHEN CLASSIFYING
-data = addTrainingLables(data, shift_days)
+# data = addTrainingLables(data, shift_days)
 #-----------------------------------------------------------------------------------------------------------------------
 
 train_size = int(len(data) * 0.8)
@@ -98,11 +99,11 @@ test = test.drop(["Close"], axis=1)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # ONLY USE WHEN CLASSIFYING
-trainLabels = train["Label"]
-testLabels = test["Label"]
-
-train = train.drop(["Label"], axis=1)
-test = test.drop(["Label"], axis=1)
+# trainLabels = train["Label"]
+# testLabels = test["Label"]
+#
+# train = train.drop(["Label"], axis=1)
+# test = test.drop(["Label"], axis=1)
 #-----------------------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------------
 #  MLP PART (REGRESSION)
@@ -112,7 +113,7 @@ test = test.drop(["Label"], axis=1)
 # X_train = scalar.fit_transform(train)
 # X_test = scalar.transform(test)
 #
-# mlp = MLPRegressor(hidden_layer_sizes=(10, 12, 14), max_iter=20000)
+# mlp = MLPRegressor(hidden_layer_sizes=(10, 12, 14), max_iter=40000)
 # mlp.fit(X_train, closeTrain)
 #
 # y_predict = mlp.predict(X_test)
@@ -128,6 +129,7 @@ test = test.drop(["Label"], axis=1)
 
 #-----------------------------------------------------------------------------------------------------------------------
 #  MLP PART (Classifier)
+
 # scalar = MinMaxScaler()
 # scalar.fit(train)
 #
@@ -149,30 +151,32 @@ test = test.drop(["Label"], axis=1)
 # from sklearn.metrics import classification_report, confusion_matrix
 # print(classification_report(testLabels, y_predict))
 # print(confusion_matrix(testLabels, y_predict))
+# print("PERCENTAGE ACCURACY")
+# print(accuracy_score(testLabels, y_predict) * 100)
 
 
 #-----------------------------------------------------------------------------------------------------------------------
 # SVM PART (REGRESSION)
 #
-# scalar = MinMaxScaler()
-# scalar.fit(train)
-#
-# X_train = scalar.fit_transform(train)
-# X_test = scalar.transform(test)
-#
-# svr = SVR(kernel="linear")
-# svr.fit(X_train, closeTrain)
-#
-# y_predict = svr.predict(X_test)
-#
-# print("Y_PREDICT")
-# print(y_predict)
-# print("CLOSETEST")
-# print(closeTest)
-#
-# print("RMSE")
-# rms = sqrt(mean_squared_error(closeTest, y_predict))
-# print(rms)
+scalar = MinMaxScaler()
+scalar.fit(train)
+
+X_train = scalar.fit_transform(train)
+X_test = scalar.transform(test)
+
+svr = SVR(kernel="linear")
+svr.fit(X_train, closeTrain)
+
+y_predict = svr.predict(X_test)
+
+print("Y_PREDICT")
+print(y_predict)
+print("CLOSETEST")
+print(closeTest)
+
+print("RMSE")
+rms = sqrt(mean_squared_error(closeTest, y_predict))
+print(rms)
 
 #-----------------------------------------------------------------------------------------------------------------------
 #  SVM PART (Classifier)
@@ -197,10 +201,13 @@ test = test.drop(["Label"], axis=1)
 # from sklearn.metrics import classification_report, confusion_matrix
 # print(classification_report(testLabels, y_predict))
 # print(confusion_matrix(testLabels, y_predict))
+# print("PERCENTAGE ACCURACY")
+# print(accuracy_score(testLabels, y_predict) * 100)
+
 #
 #-----------------------------------------------------------------------------------------------------------------------
 # Decision Tree Part (REGRESSION)
-#
+
 # scalar = MinMaxScaler()
 # scalar.fit(train)
 #
@@ -229,7 +236,7 @@ test = test.drop(["Label"], axis=1)
 # X_train = scalar.fit_transform(train)
 # X_test = scalar.transform(test)
 #
-# dtc = DecisionTreeClassifier()
+# dtc = DecisionTreeClassifier(max_depth=2048)
 # dtc.fit(X_train, trainLabels)
 #
 # # Predict values
@@ -244,6 +251,8 @@ test = test.drop(["Label"], axis=1)
 # from sklearn.metrics import classification_report, confusion_matrix
 # print(classification_report(testLabels, y_predict))
 # print(confusion_matrix(testLabels, y_predict))
-#
+# print("PERCENTAGE ACCURACY")
+# print(accuracy_score(testLabels, y_predict) * 100)
+
 
 
