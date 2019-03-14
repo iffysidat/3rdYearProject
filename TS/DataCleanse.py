@@ -15,6 +15,7 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import accuracy_score
+from sklearn.decomposition import PCA
 from math import sqrt
 desired_width=320
 
@@ -82,7 +83,7 @@ data = data.loc[:, :"Close"]
 
 #-----------------------------------------------------------------------------------------------------------------------
 # ONLY USE WHEN CLASSIFYING
-# data = addTrainingLables(data, shift_days)
+data = addTrainingLables(data, shift_days)
 #-----------------------------------------------------------------------------------------------------------------------
 
 train_size = int(len(data) * 0.8)
@@ -99,11 +100,11 @@ test = test.drop(["Close"], axis=1)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # ONLY USE WHEN CLASSIFYING
-# trainLabels = train["Label"]
-# testLabels = test["Label"]
-#
-# train = train.drop(["Label"], axis=1)
-# test = test.drop(["Label"], axis=1)
+trainLabels = train["Label"]
+testLabels = test["Label"]
+
+train = train.drop(["Label"], axis=1)
+test = test.drop(["Label"], axis=1)
 #-----------------------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------------
 #  MLP PART (REGRESSION)
@@ -158,51 +159,65 @@ test = test.drop(["Close"], axis=1)
 #-----------------------------------------------------------------------------------------------------------------------
 # SVM PART (REGRESSION)
 #
-scalar = MinMaxScaler()
-scalar.fit(train)
-
-X_train = scalar.fit_transform(train)
-X_test = scalar.transform(test)
-
-svr = SVR(kernel="linear")
-svr.fit(X_train, closeTrain)
-
-y_predict = svr.predict(X_test)
-
-print("Y_PREDICT")
-print(y_predict)
-print("CLOSETEST")
-print(closeTest)
-
-print("RMSE")
-rms = sqrt(mean_squared_error(closeTest, y_predict))
-print(rms)
-
-#-----------------------------------------------------------------------------------------------------------------------
-#  SVM PART (Classifier)
 # scalar = MinMaxScaler()
 # scalar.fit(train)
 #
 # X_train = scalar.fit_transform(train)
 # X_test = scalar.transform(test)
 #
-# svc = SVC(kernel="linear")
-# svc.fit(X_train, trainLabels)
+# svr = SVR(kernel="linear")
+# svr.fit(X_train, closeTrain)
 #
-# # Predict values
-# y_predict = svc.predict(X_test)
+# y_predict = svr.predict(X_test)
 #
-# print("PREDCITED")
+# print("Y_PREDICT")
 # print(y_predict)
-# print("TESTLABELS")
-# print(testLabels)
+# print("CLOSETEST")
+# print(closeTest)
 #
-# # Print Classification report nd confusion matrix
-# from sklearn.metrics import classification_report, confusion_matrix
-# print(classification_report(testLabels, y_predict))
-# print(confusion_matrix(testLabels, y_predict))
-# print("PERCENTAGE ACCURACY")
-# print(accuracy_score(testLabels, y_predict) * 100)
+# print("RMSE")
+# rms = sqrt(mean_squared_error(closeTest, y_predict))
+# print(rms)
+
+#-----------------------------------------------------------------------------------------------------------------------
+#  SVM PART (Classifier)
+scalar = MinMaxScaler()
+scalar.fit(train)
+
+X_train = scalar.fit_transform(train)
+X_test = scalar.transform(test)
+
+svc = SVC(kernel="linear")
+svc.fit(X_train, trainLabels)
+
+# Predict values
+y_predict = svc.predict(X_test)
+
+print("PREDCITED")
+print(y_predict)
+print("TESTLABELS")
+print(testLabels)
+
+# Print Classification report nd confusion matrix
+from sklearn.metrics import classification_report, confusion_matrix
+print(classification_report(testLabels, y_predict))
+print(confusion_matrix(testLabels, y_predict))
+print("PERCENTAGE ACCURACY")
+print(accuracy_score(testLabels, y_predict) * 100)
+
+pca = PCA(n_components=2).fit(X_train)
+pca_2d = pca.transform(X_train)
+print(pca_2d)
+
+import pylab as pl
+for i in range(shift_days, pca_2d.shape[0]):
+    if trainLabels[i] == 0:
+        c1 = pl.scatter(pca_2d[i,0],pca_2d[i,1],c='r',    marker='+')
+    elif trainLabels[i] == 1:
+        c2 = pl.scatter(pca_2d[i,0],pca_2d[i,1],c='g',    marker='o')
+pl.legend([c1, c2], ['Sell', 'Buy'])
+pl.title('S&P500 training dataset with 2 classes and known outcomes')
+pl.show()
 
 #
 #-----------------------------------------------------------------------------------------------------------------------
