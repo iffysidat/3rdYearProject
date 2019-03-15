@@ -16,6 +16,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import accuracy_score
 from sklearn.decomposition import PCA
+from sklearn.model_selection import GridSearchCV
 from math import sqrt
 desired_width=320
 
@@ -137,11 +138,22 @@ test = test.drop(["Label"], axis=1)
 # X_train = scalar.fit_transform(train)
 # X_test = scalar.transform(test)
 #
-# mlp = MLPClassifier(hidden_layer_sizes=(80, 80, 80, 80), max_iter=20000)
-# mlp.fit(X_train, trainLabels)
+# mlp = MLPClassifier(max_iter=20000)
+#
+# parameter_space = {
+#     'hidden_layer_sizes': [(6, 7, 8), (10, 12, 14), (80, 80, 80, 80)],
+#     'activation': ['tanh', 'relu', 'logistic'],
+#     'solver': ['sgd', 'adam'],
+#     'alpha': [0.0001, 0.05],
+#     'learning_rate': ['constant', 'adaptive'],
+# }
+#
+# clf = GridSearchCV(mlp, parameter_space, cv=3)
+# clf.fit(X_train, trainLabels)
+#
 #
 # # Predict values
-# y_predict = mlp.predict(X_test)
+# y_predict = clf.predict(X_test)
 #
 # print("PREDCITED")
 # print(y_predict)
@@ -150,6 +162,7 @@ test = test.drop(["Label"], axis=1)
 #
 # # Print Classification report nd confusion matrix
 # from sklearn.metrics import classification_report, confusion_matrix
+# print('Best parameters found:\n', clf.best_params_)
 # print(classification_report(testLabels, y_predict))
 # print(confusion_matrix(testLabels, y_predict))
 # print("PERCENTAGE ACCURACY")
@@ -181,45 +194,38 @@ test = test.drop(["Label"], axis=1)
 
 #-----------------------------------------------------------------------------------------------------------------------
 #  SVM PART (Classifier)
-scalar = MinMaxScaler()
-scalar.fit(train)
-
-X_train = scalar.fit_transform(train)
-X_test = scalar.transform(test)
-
-svc = SVC(kernel="linear")
-svc.fit(X_train, trainLabels)
-
-# Predict values
-y_predict = svc.predict(X_test)
-
-print("PREDCITED")
-print(y_predict)
-print("TESTLABELS")
-print(testLabels)
-
-# Print Classification report nd confusion matrix
-from sklearn.metrics import classification_report, confusion_matrix
-print(classification_report(testLabels, y_predict))
-print(confusion_matrix(testLabels, y_predict))
-print("PERCENTAGE ACCURACY")
-print(accuracy_score(testLabels, y_predict) * 100)
-
-pca = PCA(n_components=2).fit(X_train)
-pca_2d = pca.transform(X_train)
-print(pca_2d)
-
-import pylab as pl
-for i in range(shift_days, pca_2d.shape[0]):
-    if trainLabels[i] == 0:
-        c1 = pl.scatter(pca_2d[i,0],pca_2d[i,1],c='r',    marker='+')
-    elif trainLabels[i] == 1:
-        c2 = pl.scatter(pca_2d[i,0],pca_2d[i,1],c='g',    marker='o')
-pl.legend([c1, c2], ['Sell', 'Buy'])
-pl.title('S&P500 training dataset with 2 classes and known outcomes')
-pl.show()
-
+# scalar = MinMaxScaler()
+# scalar.fit(train)
 #
+# X_train = scalar.fit_transform(train)
+# X_test = scalar.transform(test)
+#
+# svc = SVC(kernel="linear")
+#
+# parameter_space = {
+#     'C': [0.1, 1, 10, 100],
+#     'kernel': ['linear', 'poly', 'rbf'],
+# }
+# clf = GridSearchCV(svc, parameter_space, cv=3)
+# clf.fit(X_train, trainLabels)
+#
+#
+# # Predict values
+# y_predict = clf.predict(X_test)
+#
+# print("PREDCITED")
+# print(y_predict)
+# print("TESTLABELS")
+# print(testLabels)
+#
+# # Print Classification report nd confusion matrix
+# from sklearn.metrics import classification_report, confusion_matrix
+# print('Best parameters found:\n', clf.best_params_)
+# print(classification_report(testLabels, y_predict))
+# print(confusion_matrix(testLabels, y_predict))
+# print("PERCENTAGE ACCURACY")
+# print(accuracy_score(testLabels, y_predict) * 100)
+
 #-----------------------------------------------------------------------------------------------------------------------
 # Decision Tree Part (REGRESSION)
 
@@ -245,29 +251,36 @@ pl.show()
 
 #-----------------------------------------------------------------------------------------------------------------------
 #  Decision Tree PART (Classifier)
-# scalar = MinMaxScaler()
-# scalar.fit(train)
-#
-# X_train = scalar.fit_transform(train)
-# X_test = scalar.transform(test)
-#
-# dtc = DecisionTreeClassifier(max_depth=2048)
-# dtc.fit(X_train, trainLabels)
-#
-# # Predict values
-# y_predict = dtc.predict(X_test)
-#
-# print("PREDCITED")
-# print(y_predict)
-# print("TESTLABELS")
-# print(testLabels)
-#
-# # Print Classification report nd confusion matrix
-# from sklearn.metrics import classification_report, confusion_matrix
-# print(classification_report(testLabels, y_predict))
-# print(confusion_matrix(testLabels, y_predict))
-# print("PERCENTAGE ACCURACY")
-# print(accuracy_score(testLabels, y_predict) * 100)
+scalar = MinMaxScaler()
+scalar.fit(train)
+
+X_train = scalar.fit_transform(train)
+X_test = scalar.transform(test)
+
+dtc = DecisionTreeClassifier()
+
+parameter_space = {
+    'max_depth': [None],
+    'min_samples_split': [2],
+}
+clf = GridSearchCV(dtc, parameter_space, cv=3)
+clf.fit(X_train, trainLabels)
+
+# Predict values
+y_predict = clf.predict(X_test)
+
+print("PREDCITED")
+print(y_predict)
+print("TESTLABELS")
+print(testLabels)
+
+# Print Classification report nd confusion matrix
+from sklearn.metrics import classification_report, confusion_matrix
+print('Best parameters found:\n', clf.best_params_)
+print(classification_report(testLabels, y_predict))
+print(confusion_matrix(testLabels, y_predict))
+print("PERCENTAGE ACCURACY")
+print(accuracy_score(testLabels, y_predict) * 100)
 
 
 
