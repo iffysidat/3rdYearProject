@@ -5,6 +5,7 @@ from pandas import DataFrame
 from pandas import concat
 from pandas import read_csv
 from pandas import datetime
+from ta import *
 from matplotlib import pyplot
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.neural_network import MLPRegressor
@@ -17,6 +18,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import accuracy_score
 from sklearn.decomposition import PCA
 from sklearn.model_selection import GridSearchCV
+import matplotlib.pyplot as plt
 from math import sqrt
 desired_width=320
 
@@ -72,10 +74,20 @@ def addTrainingLables(data, shift):
     data = data[:-1]
     return data
 
-series = read_csv('../Data/S&P15YearsCloseNoDate.csv')
+series = read_csv('../Data/S&P15YearsCLoseNoDate.csv')
 # summarize first few rows
+#print(series)
+
+
+series = utils.dropna(series)
+
+series['ATR'] = average_true_range(series["High"], series["Low"], series["Close"], n=14, fillna=False)
+# series['MACD'] = macd(series['Close'], n_fast=12, n_slow=26, fillna=False)
+# series['MFI'] = money_flow_index(series['High'], series['Low'], series['Close'], series['Volume'], n=14, fillna=False)
+series = utils.dropna(series)
 print(series)
 values = series.values
+
 shift_days = 10
 data = series_to_supervised(values, shift_days, 1)
 data.rename(columns={"var1(t)": "Close"}, inplace=True)
@@ -84,7 +96,7 @@ data = data.loc[:, :"Close"]
 
 #-----------------------------------------------------------------------------------------------------------------------
 # ONLY USE WHEN CLASSIFYING
-data = addTrainingLables(data, shift_days)
+# data = addTrainingLables(data, shift_days)
 #-----------------------------------------------------------------------------------------------------------------------
 
 train_size = int(len(data) * 0.8)
@@ -101,12 +113,12 @@ test = test.drop(["Close"], axis=1)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # ONLY USE WHEN CLASSIFYING
-trainLabels = train["Label"]
-testLabels = test["Label"]
-
-train = train.drop(["Label"], axis=1)
-test = test.drop(["Label"], axis=1)
-#-----------------------------------------------------------------------------------------------------------------------
+# trainLabels = train["Label"]
+# testLabels = test["Label"]
+#
+# train = train.drop(["Label"], axis=1)
+# test = test.drop(["Label"], axis=1)
+# #-----------------------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------------
 #  MLP PART (REGRESSION)
 # scalar = MinMaxScaler()
@@ -115,19 +127,42 @@ test = test.drop(["Label"], axis=1)
 # X_train = scalar.fit_transform(train)
 # X_test = scalar.transform(test)
 #
-# mlp = MLPRegressor(hidden_layer_sizes=(10, 12, 14), max_iter=40000)
-# mlp.fit(X_train, closeTrain)
+# mlp = MLPRegressor(max_iter=20000)
 #
-# y_predict = mlp.predict(X_test)
+# parameter_space = {
+#     'hidden_layer_sizes': [(6, 7, 8)],
+#     'activation': ['relu'],
+#     'solver': ['adam'],
+#     'alpha': [0.05],
+#     'learning_rate': ['constant'],
+# }
+#
+# clf = GridSearchCV(mlp, parameter_space, cv=3)
+# clf.fit(X_train, closeTrain)
+# clf = clf.best_estimator_
+#
+# y_predict = clf.predict(X_test)
 #
 # print("Y_PREDICT")
 # print(y_predict)
 # print("CLOSETEST")
 # print(closeTest)
 #
+#
+# print('Best parameters found:\n', clf)
 # print("RMSE")
 # rms = sqrt(mean_squared_error(closeTest, y_predict))
 # print(rms)
+#
+# # import pickle
+# # with open("mlpdata.pkl", "wb") as f:
+# #     pickle.dump((y_predict, closeTest), f)
+# plt.plot(range(len(closeTest)), closeTest, c="c", label="Raw Data")
+# plt.plot(range(len(closeTest)), y_predict, c="m", label="Predictions")
+# plt.xlabel("Extrapolation Length (Days)")
+# plt.ylabel("Stock Price (USD)")
+# plt.legend()
+# plt.show()
 
 #-----------------------------------------------------------------------------------------------------------------------
 #  MLP PART (Classifier)
@@ -141,56 +176,70 @@ test = test.drop(["Label"], axis=1)
 # mlp = MLPClassifier(max_iter=20000)
 #
 # parameter_space = {
-#     'hidden_layer_sizes': [(6, 7, 8), (10, 12, 14), (80, 80, 80, 80)],
-#     'activation': ['tanh', 'relu', 'logistic'],
-#     'solver': ['sgd', 'adam'],
-#     'alpha': [0.0001, 0.05],
-#     'learning_rate': ['constant', 'adaptive'],
+#     'hidden_layer_sizes': [(80, 80, 80, 80)],
+#     'activation': ['tanh'],
+#     'solver': ['adam'],
+#     'alpha': [0.05],
+#     'learning_rate': ['constant'],
 # }
 #
 # clf = GridSearchCV(mlp, parameter_space, cv=3)
 # clf.fit(X_train, trainLabels)
+# clf = clf.best_estimator_
 #
 #
 # # Predict values
 # y_predict = clf.predict(X_test)
 #
-# print("PREDCITED")
-# print(y_predict)
-# print("TESTLABELS")
-# print(testLabels)
+# # print("PREDCITED")
+# # print(y_predict)
+# # print("TESTLABELS")
+# # print(testLabels)
 #
 # # Print Classification report nd confusion matrix
 # from sklearn.metrics import classification_report, confusion_matrix
-# print('Best parameters found:\n', clf.best_params_)
+# print('Best parameters found:\n', clf)
 # print(classification_report(testLabels, y_predict))
 # print(confusion_matrix(testLabels, y_predict))
 # print("PERCENTAGE ACCURACY")
 # print(accuracy_score(testLabels, y_predict) * 100)
 
-
 #-----------------------------------------------------------------------------------------------------------------------
 # SVM PART (REGRESSION)
-#
-# scalar = MinMaxScaler()
-# scalar.fit(train)
-#
-# X_train = scalar.fit_transform(train)
-# X_test = scalar.transform(test)
-#
-# svr = SVR(kernel="linear")
-# svr.fit(X_train, closeTrain)
-#
-# y_predict = svr.predict(X_test)
-#
-# print("Y_PREDICT")
-# print(y_predict)
-# print("CLOSETEST")
-# print(closeTest)
-#
-# print("RMSE")
-# rms = sqrt(mean_squared_error(closeTest, y_predict))
-# print(rms)
+
+scalar = MinMaxScaler()
+scalar.fit(train)
+
+X_train = scalar.fit_transform(train)
+X_test = scalar.transform(test)
+
+svr = SVR()
+
+parameter_space = {
+    'C': [100],
+    'kernel': ['linear']
+}
+clf = GridSearchCV(svr, parameter_space, cv=3)
+clf.fit(X_train, closeTrain)
+
+y_predict = clf.predict(X_test)
+
+print("Y_PREDICT")
+print(y_predict)
+print("CLOSETEST")
+print(closeTest)
+
+print('Best parameters found:\n', clf.best_params_)
+print("RMSE")
+rms = sqrt(mean_squared_error(closeTest, y_predict))
+print(rms)
+# #
+# plt.plot(range(len(closeTest)), closeTest, c="c", label="Raw Data")
+# plt.plot(range(len(closeTest)), y_predict, c="m", label="Predictions")
+# plt.xlabel("Extrapolation Length (Days)")
+# plt.ylabel("Stock Price (USD)")
+# plt.legend()
+# plt.show()
 
 #-----------------------------------------------------------------------------------------------------------------------
 #  SVM PART (Classifier)
@@ -203,11 +252,12 @@ test = test.drop(["Label"], axis=1)
 # svc = SVC(kernel="linear")
 #
 # parameter_space = {
-#     'C': [0.1, 1, 10, 100],
-#     'kernel': ['linear', 'poly', 'rbf'],
+#     'C': [100],
+#     'kernel': ['linear']
 # }
 # clf = GridSearchCV(svc, parameter_space, cv=3)
 # clf.fit(X_train, trainLabels)
+# clf = clf.best_estimator_
 #
 #
 # # Predict values
@@ -220,7 +270,7 @@ test = test.drop(["Label"], axis=1)
 #
 # # Print Classification report nd confusion matrix
 # from sklearn.metrics import classification_report, confusion_matrix
-# print('Best parameters found:\n', clf.best_params_)
+# print('Best parameters found:\n', clf)
 # print(classification_report(testLabels, y_predict))
 # print(confusion_matrix(testLabels, y_predict))
 # print("PERCENTAGE ACCURACY")
@@ -248,39 +298,51 @@ test = test.drop(["Label"], axis=1)
 # print("RMSE")
 # rms = sqrt(mean_squared_error(closeTest, y_predict))
 # print(rms)
+#
+# plt.plot(range(len(closeTest)), closeTest, c="c", label="Raw Data")
+# plt.plot(range(len(closeTest)), y_predict, c="m", label="Predictions")
+# plt.xlabel("Extrapolation Length (Days)")
+# plt.ylabel("Stock Price (USD)")
+# plt.legend()
+# plt.show()
 
 #-----------------------------------------------------------------------------------------------------------------------
 #  Decision Tree PART (Classifier)
-scalar = MinMaxScaler()
-scalar.fit(train)
-
-X_train = scalar.fit_transform(train)
-X_test = scalar.transform(test)
-
-dtc = DecisionTreeClassifier()
-
-parameter_space = {
-    'max_depth': [None],
-    'min_samples_split': [2],
-}
-clf = GridSearchCV(dtc, parameter_space, cv=3)
-clf.fit(X_train, trainLabels)
-
-# Predict values
-y_predict = clf.predict(X_test)
-
-print("PREDCITED")
-print(y_predict)
-print("TESTLABELS")
-print(testLabels)
-
-# Print Classification report nd confusion matrix
-from sklearn.metrics import classification_report, confusion_matrix
-print('Best parameters found:\n', clf.best_params_)
-print(classification_report(testLabels, y_predict))
-print(confusion_matrix(testLabels, y_predict))
-print("PERCENTAGE ACCURACY")
-print(accuracy_score(testLabels, y_predict) * 100)
-
+# scalar = MinMaxScaler()
+# scalar.fit(train)
+#
+# X_train = scalar.fit_transform(train)
+# X_test = scalar.transform(test)
+#
+# dtc = DecisionTreeClassifier()
+#
+# parameter_space = {
+#     'max_depth': [None],
+#     'min_samples_split': [2],
+# }
+# clf = GridSearchCV(dtc, parameter_space, cv=3)
+# clf.fit(train, trainLabels)
+# clf = clf.best_estimator_
+#
+#
+# # Predict values
+# y_predict = clf.predict(test)
+#
+# print("PREDCITED")
+# print(y_predict)
+# print("TESTLABELS")
+# print(testLabels)
+#
+# # Print Classification report nd confusion matrix
+# from sklearn.metrics import classification_report, confusion_matrix
+# print(classification_report(testLabels, y_predict))
+# print(confusion_matrix(testLabels, y_predict))
+# print("PERCENTAGE ACCURACY")
+# print(accuracy_score(testLabels, y_predict) * 100)
+#
+# from sklearn import tree
+#
+# dot_data = tree.export_graphviz(clf, out_file='newtree.dot', feature_names=train.columns.values, class_names=['0', '1'],
+#                                 filled=True, rounded=True, special_characters=True)
 
 
